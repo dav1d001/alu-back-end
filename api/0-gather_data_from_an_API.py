@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 """
-   A python script that returns TODO list progress for a given employee ID
+    python script that returns TODO list progress for a given employee ID
 """
 import json
 import requests
