@@ -1,30 +1,48 @@
 #!/usr/bin/python3
+"""
+Python script that returns a TODO list progress for a given employee ID.
 
-""" it gathers data from an API"""
+This script fetches data from the API to retrieve
+and analyze the TODO list progress.
+"""
 
 import json
 import requests
-import sys
-
-"""a Python script to export data in the JSON format"""
+from sys import argv
 
 if __name__ == "__main__":
-    employee_id = sys.argv[1]
-    url = "https://jsonplaceholder.typicode.com/users/{}".format(employee_id)
-    todo = "https://jsonplaceholder.typicode.com/todos?userId={}"
-    todo = todo.format(employee_id)
+    """Step 1: Fetch employee information from the API."""
+    request_employee = requests.get(
+        'https://jsonplaceholder.typicode.com/users/{}/'.format(argv[1]))
+    employee = json.loads(request_employee.text)
+    employee_name = employee.get("name")
+    USERNAME = employee.get("username")
 
-    user_info = requests.request("GET", url).json()
-    todo_info = requests.request("GET", todo).json()
+    """" Step 2: Fetch the employee's TODO list from the API."""
+    request_todos = requests.get(
+        'https://jsonplaceholder.typicode.com/users/{}/todos'.format(argv[1]))
+    tasks = {}
+    employee_todos = json.loads(request_todos.text)
 
-    employee_username = user_info.get("username")
+    USER_ID = argv[1]
 
-    todos_info_sorted = [
-        dict(zip(["task", "completed", "username"],
-                 [task["title"], task["completed"], employee_username]))
-        for task in todo_info
-    ]
+    """Step 3: Analyze and process the TODO list data."""
+    for dictionary in employee_todos:
+        USER_ID = dictionary.get("user")
+        TASK_TITLE = dictionary.get("title")
+        TASK_COMPLETED_STATUS = dictionary.get("completed")
+        tasks.update({TASK_TITLE: TASK_COMPLETED_STATUS})
 
-    user_dict = {str(employee_id): todos_info_sorted}
-    with open(str(employee_id) + '.json', "w") as f:
-        f.write(json.dumps(user_dict))
+    task_list = []
+    for k, v in tasks.items():
+        task_list.append({
+            "task": k,
+            "completed": v,
+            "username": USERNAME
+        })
+
+    json_to_dump = {argv[1]: task_list}
+
+    """ Step 4: Exporting the analyzed data to a JSON file."""
+    with open('{}.json'.format(argv[1]), mode='w') as file:
+        json.dump(json_to_dump, file)
